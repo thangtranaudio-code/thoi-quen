@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #0d0d0d;
+    --bg-surface: #1a1a1a;
+    --text-primary: #f3ece4;
+    --text-muted: #c4b6a8;
+    --accent-orange: #ff7a00;
+    --accent-fire: #ffb000;
+    --accent-red: #d94a38;
+    --accent-green: #3d9a7a;
+    --border-color: #3a322c;
+    --chip-active: #2a1c14;
+  }
+
+  body {
+    background-color: #0d0d0d;
+    color: #f3ece4;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Safe touch target size */
+  button, input, select, textarea {
+    touch-action: manipulation;
+  }
+}

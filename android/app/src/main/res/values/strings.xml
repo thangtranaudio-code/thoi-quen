@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="wid_mo_ta">Hôm nay Habis</string>
-    <string name="wid_cam">Habis Cam</string>
-    <string name="wid_dem">Habis Đêm</string>
-    <string name="xong">Xong</string>
-    <string name="het_viec">Hết việc hôm nay</string>
-</resources>

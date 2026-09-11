@@ -1,0 +1,6 @@
+{
+  "name": "Thói quen",
+  "description": "Ứng dụng theo dõi thói quen, cân nặng, hoạt động thể thao, năng lượng và chỉ số cơ thể offline trên máy.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

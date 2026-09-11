@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/assets/habis_icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Thói quen</title>
+    <meta property="og:title" content="Thói quen" />
+    <meta name="description" content="Ứng dụng theo dõi thói quen, cân nặng, hoạt động thể thao, năng lượng và chỉ số cơ thể offline trên máy." />
+    <meta property="og:description" content="Ứng dụng theo dõi thói quen, cân nặng, hoạt động thể thao, năng lượng và chỉ số cơ thể offline trên máy." />
+    <style>
+      /* Mobile touch handling and scrollbar styling */
+      html, body {
+        background-color: #0d0d0d;
+        color: #f3ece4;
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        -webkit-tap-highlight-color: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      /* Hide standard scrollbars */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0d0d0d;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2a1c14;
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ff7a00;
+      }
+    </style>
+  </head>
+  <body class="bg-[#0d0d0d] text-[#f3ece4] antialiased select-none">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
