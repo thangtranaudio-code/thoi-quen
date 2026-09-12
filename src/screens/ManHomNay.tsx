@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Flame, Plus, Check, Scale, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react';
+import { Flame, Plus, Check, Scale, ChevronRight, Calendar as CalendarIcon, Info, Sparkles, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { Habit } from '../types';
 import { Chuoi, So, Ten } from '../chuoi';
 import { Ngay } from '../ngay';
@@ -9,23 +9,31 @@ import { LanNgayModal } from '../components/LanNgayModal';
 import { ThemHabitModal } from '../components/ThemHabitModal';
 import { MotHabitModal } from '../components/MotHabitModal';
 import { GhiCanModal } from '../components/GhiCanModal';
+import { WidgetHabis } from '../components/WidgetHabis';
+import { WidgetHabisGon } from '../components/WidgetHabisGon';
+import { CamXucService } from '../services/camXucService';
 
 interface ManHomNayProps {
   selectedDate: Date;
   onSelectDate: (d: Date) => void;
   onOpenTienDo: () => void;
+  onOpenFocus?: () => void;
 }
 
 export const ManHomNay: React.FC<ManHomNayProps> = ({
   selectedDate,
   onSelectDate,
   onOpenTienDo,
+  onOpenFocus,
 }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAddHabit, setShowAddHabit] = useState(false);
   const [habitDetail, setHabitDetail] = useState<Habit | null>(null);
   const [habitToEdit, setHabitToEdit] = useState<Habit | null>(null);
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [habitFilter, setHabitFilter] = useState<'tat_ca' | 'chua_xong' | 'da_xong'>('tat_ca');
+  const [collapseCompleted, setCollapseCompleted] = useState(false);
+  const [widgetStyle, setWidgetStyle] = useState<'day_du' | 'gon'>(() => StorageService.getWidgetStyle());
 
   const data = StorageService.getData();
   const today = new Date();
@@ -36,6 +44,16 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
   const habits = StorageService.getHabits();
   const ticksThisDay = StorageService.getTicksForDay(dateIso);
   const tickedHabitIds = new Set(ticksThisDay.map((t) => t.habitId));
+
+  // Count habits completed, including habits covered by scheduled Focus tasks
+  let completedHabitsCount = 0;
+  habits.forEach((h) => {
+    const isTicked = tickedHabitIds.has(h.id);
+    const coveringFocus = StorageService.getCoveringFocusTaskForHabit(h, dateIso);
+    if (isTicked || coveringFocus != null) {
+      completedHabitsCount++;
+    }
+  });
 
   // Week dots for Monday to Sunday
   const weekDays = Ngay.tuan(selectedDate);
@@ -78,37 +96,74 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
 
     if (newHabit) {
       StorageService.toggleTick(newHabit.id, dateIso);
+      CamXucService.kichHoatTickHabit(newHabit.ten, false);
     }
   };
 
   const handleToggleTick = (habit: Habit, e: React.MouseEvent) => {
     e.stopPropagation();
     if (khoaGhi) return;
-    StorageService.toggleTick(habit.id, dateIso);
+    const ticked = StorageService.toggleTick(habit.id, dateIso);
+    if (ticked) {
+      const todayTicks = StorageService.getTicksForDay(dateIso);
+      const isAllDone = habits.length > 0 && todayTicks.length >= habits.length;
+      CamXucService.kichHoatTickHabit(habit.ten, isAllDone);
+    }
+  };
+
+  const handleSwitchWidget = (style: 'day_du' | 'gon') => {
+    StorageService.setWidgetStyle(style);
+    setWidgetStyle(style);
   };
 
   return (
     <div id="man-hom-nay" className="flex flex-col min-h-full pb-20 px-4 pt-3 max-w-lg mx-auto">
-      {/* Greeting & Streak Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#f3ece4]">
-            {Chuoi.chaoTheoGio()}
-          </h1>
-          <p className="text-xs text-[#c4b6a8] mt-0.5">{Chuoi.totHonHomQua}</p>
+      {/* Widget Section: Compact vs Full with Seamless Switch */}
+      {widgetStyle === 'gon' ? (
+        <WidgetHabisGon
+          onOpenFocus={onOpenFocus}
+          onSwitchToFull={() => handleSwitchWidget('day_du')}
+        />
+      ) : (
+        <WidgetHabis
+          onOpenFocus={onOpenFocus}
+          onSwitchToGon={() => handleSwitchWidget('gon')}
+        />
+      )}
+
+      {/* Greeting & Logo Header (Safe Zone) */}
+      <div className="flex items-center justify-between mb-3.5 pt-1">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-2xl bg-black border border-[#ff6000]/40 p-1 flex items-center justify-center shrink-0 shadow-md shadow-[#ff6000]/15 overflow-hidden"
+            title="HABIS Thói quen"
+          >
+            <img
+              src="/assets/app_logo.png"
+              alt="Logo"
+              className="w-full h-full object-contain"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-[#f8f7f4]">
+              {Chuoi.chaoTheoGio()}
+            </h1>
+            <p className="text-xs text-[#a6a39b] mt-0.5 font-medium">{Chuoi.totHonHomQua}</p>
+          </div>
         </div>
 
-        {/* Fire Streak Badge */}
+        {/* Fire Streak Badge with Logo Brand Colors */}
         <div
           id="badge-streak-lua"
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1a1a] border border-[#ff7a00]/40 rounded-xl"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131418] border border-[#ff6000]/30 rounded-2xl shadow-sm"
         >
-          <Flame className="w-4 h-4 text-[#ff7a00] fill-[#ff7a00]/30" />
+          <Flame className="w-4 h-4 text-[#ff6000] fill-[#ff6000]" />
           <div className="text-right">
-            <div className="text-[9px] uppercase tracking-wider text-[#c4b6a8] font-bold">
+            <div className="text-[9px] uppercase tracking-wider text-[#a6a39b] font-bold">
               {Chuoi.chuoiHienTai}
             </div>
-            <div className="text-xs font-black text-[#ff7a00]">
+            <div className="text-xs font-black text-[#ffaa00]">
               {streak} {Chuoi.ngayDonVi}
             </div>
           </div>
@@ -116,32 +171,34 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
       </div>
 
       {/* Date Row (Tap to open date picker) */}
-      <div className="mb-4">
+      <div className="mb-3">
         <button
           id="nut-dong-ngay-chon"
           type="button"
           onClick={() => setShowDatePicker(true)}
-          className="w-full flex items-center justify-between p-3 bg-[#161714] hover:bg-[#2a1c14]/60 border border-[#3a322c]/60 rounded-xl transition-colors text-left"
+          className="w-full flex items-center justify-between p-3.5 bg-[#131418] hover:bg-[#181a20] border border-[#24262c] hover:border-[#ff6000]/30 rounded-2xl transition-all text-left shadow-sm"
         >
-          <div className="flex items-center gap-2.5">
-            <CalendarIcon className="w-4 h-4 text-[#ff7a00]" />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#1c1e26] flex items-center justify-center text-[#ffaa00]">
+              <CalendarIcon className="w-4 h-4" />
+            </div>
             <div>
-              <div className="text-sm font-semibold text-[#f3ece4]">
+              <div className="text-sm font-semibold text-[#f8f7f4]">
                 {Chuoi.dongNgay(selectedDate)}
               </div>
-              <div className="text-xs text-[#c4b6a8] mt-0.5">
+              <div className="text-xs text-[#a6a39b] mt-0.5 font-medium">
                 {isToday
-                  ? Chuoi.nTrenMHomNay(tickedHabitIds.size, habits.length)
-                  : Chuoi.nTrenMNgay(tickedHabitIds.size, habits.length, selectedDate)}
+                  ? Chuoi.nTrenMHomNay(completedHabitsCount, habits.length)
+                  : Chuoi.nTrenMNgay(completedHabitsCount, habits.length, selectedDate)}
                 {khoaGhi && (
-                  <span className="text-[#d94a38] font-semibold ml-1.5">
+                  <span className="text-[#e63946] font-semibold ml-1.5">
                     · {Chuoi.chiXem}
                   </span>
                 )}
               </div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-[#c4b6a8]" />
+          <ChevronRight className="w-4 h-4 text-[#a6a39b]" />
         </button>
 
         {/* Return to today button if not today */}
@@ -149,9 +206,9 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
           <button
             type="button"
             onClick={() => onSelectDate(new Date())}
-            className="mt-1 text-[11px] text-[#ff7a00] hover:underline flex items-center gap-1 font-medium"
+            className="mt-1.5 text-[11px] text-[#ffaa00] hover:underline flex items-center gap-1 font-semibold pl-1"
           >
-            Quay lại hôm nay
+            ← Quay lại hôm nay
           </button>
         )}
       </div>
@@ -159,87 +216,71 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
       {/* 7 Week Dots Strip (Display only) */}
       <div
         id="dai-7-cham-tuan"
-        aria-label="7 ngày trong tuần"
-        className="flex items-center justify-between bg-[#161714] p-3 rounded-xl border border-[#3a322c]/40 mb-4"
+        className="flex items-center justify-between px-3.5 py-2.5 bg-[#131418] rounded-2xl border border-[#24262c] mb-3 shadow-sm"
       >
         {weekDays.map((d, index) => {
           const iso = Ngay.iso(d);
-          const dayTicks = StorageService.getTicksForDay(iso);
+          const ticksOnDay = StorageService.getTicksForDay(iso);
           const isSelected = Ngay.cungNgay(d, selectedDate);
           const isDayToday = Ngay.cungNgay(d, today);
-          const hasDone = habits.length > 0 && dayTicks.length >= habits.length;
-          const hasPartial = dayTicks.length > 0 && dayTicks.length < habits.length;
+          const isCompleted = habits.length > 0 && ticksOnDay.length >= habits.length;
+          const isPartial = ticksOnDay.length > 0 && ticksOnDay.length < habits.length;
 
           return (
-            <div key={iso} className="flex flex-col items-center gap-1">
-              <span className="text-[10px] font-medium text-[#c4b6a8]">
+            <div key={iso} className="flex flex-col items-center gap-1.5">
+              <span
+                className={`text-[10px] font-bold ${
+                  isSelected ? 'text-[#ffaa00]' : isDayToday ? 'text-[#f8f7f4]' : 'text-[#a6a39b]'
+                }`}
+              >
                 {Chuoi.thuNgan[index]}
               </span>
               <div
-                className={`w-4 h-4 rounded-full flex items-center justify-center transition-all ${
-                  hasDone
-                    ? 'bg-[#3d9a7a]'
-                    : hasPartial
-                    ? 'bg-[#ff7a00]'
-                    : isDayToday
-                    ? 'border-2 border-[#ff7a00]'
-                    : 'bg-[#2a1c14]'
-                } ${isSelected ? 'ring-2 ring-white/60 scale-110' : ''}`}
+                className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all ${
+                  isCompleted
+                    ? 'bg-[#38b000]'
+                    : isPartial
+                    ? 'bg-gradient-to-br from-[#ffaa00] to-[#ff6000]'
+                    : isSelected
+                    ? 'border-2 border-[#ffaa00] bg-transparent'
+                    : 'bg-[#22242c]'
+                }`}
               />
-              <span className="text-[9px] text-[#c4b6a8]/70">{d.getDate()}</span>
             </div>
           );
         })}
       </div>
 
-      {/* Top Weight Chip */}
-      <div className="mb-4">
+      {/* Weight Chip & Workout Flame */}
+      <div className="flex items-center gap-2 mb-3.5 overflow-x-auto pb-1">
         {latestWeight ? (
           <button
-            id="chip-can-nang-home"
+            id="chip-can-nang"
             type="button"
-            onClick={() => setShowWeightModal(true)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#161714] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl transition-colors text-left"
+            onClick={onOpenTienDo}
+            className="px-3.5 py-2 bg-[#131418] hover:bg-[#1a1c22] border border-[#24262c] hover:border-[#ff6000]/30 rounded-2xl text-xs font-semibold text-[#f8f7f4] flex items-center gap-2 transition-all shrink-0 shadow-sm"
           >
-            <div className="flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#ff7a00]" />
-              <span className="text-xs font-semibold text-[#f3ece4]">
-                {targetWeight
-                  ? Chuoi.chipCanCon(
-                      So.kg(latestWeight.kg),
-                      So.kg(Math.abs(latestWeight.kg - targetWeight))
-                    )
-                  : Chuoi.chipCan(So.kg(latestWeight.kg))}
-              </span>
-            </div>
-            <span className="text-[11px] text-[#ff7a00] font-medium">Ghi thêm</span>
+            <Scale className="w-3.5 h-3.5 text-[#ffaa00]" />
+            {targetWeight
+              ? Chuoi.chipCanCon(So.kg(latestWeight.kg), So.kg(Math.abs(latestWeight.kg - targetWeight)))
+              : `${So.kg(latestWeight.kg)} kg`}
           </button>
         ) : (
           <button
-            id="chip-them-can-home"
+            id="chip-them-can"
             type="button"
             onClick={() => setShowWeightModal(true)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#161714] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl transition-colors text-left"
+            disabled={khoaGhi}
+            className="px-3.5 py-2 bg-[#131418] hover:bg-[#1a1c22] border border-[#24262c] hover:border-[#ff6000]/30 rounded-2xl text-xs font-semibold text-[#a6a39b] hover:text-[#f8f7f4] flex items-center gap-2 transition-all shrink-0 disabled:opacity-50 shadow-sm"
           >
-            <div className="flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#c4b6a8]" />
-              <span className="text-xs font-semibold text-[#c4b6a8]">
-                {Chuoi.themCan}
-              </span>
-            </div>
-            <Plus className="w-4 h-4 text-[#c4b6a8]" />
+            <Plus className="w-3.5 h-3.5 text-[#ffaa00]" />
+            {Chuoi.themCan}
           </button>
         )}
-      </div>
 
-      {/* Habits List Header */}
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-[#c4b6a8]">
-          {Chuoi.thoiQuen} ({habits.length}/8)
-        </h2>
         {lua.so > 0 && (
-          <span className="text-[11px] text-[#ffb000] font-medium flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5" />
+          <span className="text-[11px] text-[#ffaa00] font-semibold flex items-center gap-1.5 shrink-0 bg-[#131418] px-3 py-2 rounded-2xl border border-[#24262c] shadow-sm">
+            <Flame className="w-3.5 h-3.5 text-[#ff6000] fill-[#ff6000]" />
             Lửa tập {lua.so}
           </span>
         )}
@@ -247,24 +288,24 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
 
       {/* Habit Rows or First Run Chips */}
       {habits.length === 0 ? (
-        <div id="first-run-chips-container" className="p-4 bg-[#161714] rounded-2xl border border-[#3a322c]/50 my-2">
+        <div id="first-run-chips-container" className="p-5 bg-[#131418] rounded-3xl border border-[#24262c] my-2 shadow-md">
           <div className="flex items-center gap-2 mb-3">
-            <Info className="w-4 h-4 text-[#ff7a00]" />
-            <span className="text-xs font-semibold text-[#f3ece4]">Bắt đầu thói quen đầu tiên</span>
+            <Info className="w-4 h-4 text-[#ffaa00]" />
+            <span className="text-xs font-bold text-[#f8f7f4]">Bắt đầu thói quen đầu tiên</span>
           </div>
-          <p className="text-xs text-[#c4b6a8] mb-3 leading-relaxed">
+          <p className="text-xs text-[#a6a39b] mb-4 leading-relaxed">
             Chọn thói quen mẫu hoặc tự đặt tên để bắt đầu xây dựng chuỗi của bạn.
           </p>
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-4">
             {firstRunChips.map((c) => (
               <button
                 key={c.ten}
                 type="button"
                 onClick={() => handleChipSelect(c)}
                 disabled={khoaGhi}
-                className="px-3 py-2 bg-[#0d0d0d] hover:bg-[#2a1c14] text-xs font-medium text-[#f3ece4] border border-[#3a322c] rounded-xl flex items-center gap-1.5 transition-colors active:scale-95 disabled:opacity-50"
+                className="px-3.5 py-2 bg-[#090a0c] hover:bg-[#181a20] text-xs font-medium text-[#f8f7f4] border border-[#24262c] hover:border-[#ff6000]/40 rounded-2xl flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
               >
-                <Plus className="w-3.5 h-3.5 text-[#ff7a00]" />
+                <Plus className="w-3.5 h-3.5 text-[#ffaa00]" />
                 {c.ten}
               </button>
             ))}
@@ -273,7 +314,7 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
             type="button"
             onClick={() => setShowAddHabit(true)}
             disabled={khoaGhi}
-            className="w-full py-2.5 bg-[#ff7a00] text-[#0d0d0d] text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50"
+            className="w-full py-3 bg-gradient-to-r from-[#ffaa00] to-[#ff6000] text-black text-xs font-bold rounded-2xl flex items-center justify-center gap-1.5 active:scale-98 disabled:opacity-50 shadow-md shadow-[#ff6000]/20 transition-transform"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             {Chuoi.tuDatTen}
@@ -281,59 +322,171 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
         </div>
       ) : (
         <div className="space-y-2 mb-4">
-          {habits.map((habit) => {
-            const isTicked = tickedHabitIds.has(habit.id);
-            // Count month ticks for this habit
-            const monthTicksCount = allMonthTicks.filter((t) => t.habitId === habit.id).length;
-
-            return (
-              <div
-                key={habit.id}
-                id={`hang-habit-${habit.id}`}
-                onClick={() => setHabitDetail(habit)}
-                className={`min-h-[52px] p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                  isTicked
-                    ? 'bg-[#161714] border-[#3d9a7a]/60 text-[#f3ece4]'
-                    : 'bg-[#161714] border-[#3a322c]/50 text-[#f3ece4] hover:border-[#3a322c]'
-                }`}
-              >
-                {/* Habit name and month progress */}
-                <div className="flex-1 pr-3">
-                  <div
-                    className={`text-sm font-semibold leading-tight ${
-                      isTicked ? 'text-[#f3ece4]' : 'text-[#f3ece4]'
-                    }`}
-                  >
-                    {habit.ten}
-                  </div>
-                  <div className="text-[11px] text-[#c4b6a8] mt-0.5">
-                    {Chuoi.xTrenNThangNay(monthTicksCount, habit.mucTieuThang)}
-                    {habit.met && (
-                      <span className="text-[#ffb000] ml-1.5">
-                        · {habit.phutMacDinh ?? 30} {Chuoi.phut}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Single Tap Tick Checkbox (>= 44pt tap target) */}
+          {/* Thanh phân loại & thu gọn thói quen */}
+          {habits.length > 1 && (
+            <div className="flex items-center justify-between pb-1.5 text-xs">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  id={`nut-tick-habit-${habit.id}`}
-                  onClick={(e) => handleToggleTick(habit, e)}
-                  disabled={khoaGhi}
-                  aria-label={`Đánh dấu ${habit.ten}`}
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-transform active:scale-90 ${
-                    isTicked
-                      ? 'bg-[#3d9a7a] text-[#0d0d0d]'
-                      : 'bg-[#0d0d0d] border border-[#3a322c] text-transparent hover:border-[#ff7a00]'
-                  } ${khoaGhi ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  onClick={() => setHabitFilter('tat_ca')}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
+                    habitFilter === 'tat_ca'
+                      ? 'bg-[#1e2029] text-[#f8f7f4] border border-[#2e313c] shadow-sm'
+                      : 'text-[#a6a39b] hover:text-[#f8f7f4]'
+                  }`}
                 >
-                  <Check className={`w-6 h-6 stroke-[3] ${isTicked ? 'opacity-100' : 'opacity-0'}`} />
+                  Tất cả ({habits.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHabitFilter('chua_xong')}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
+                    habitFilter === 'chua_xong'
+                      ? 'bg-[#261b14] text-[#ffaa00] border border-[#ff6000]/40 shadow-sm'
+                      : 'text-[#a6a39b] hover:text-[#f8f7f4]'
+                  }`}
+                >
+                  Chưa xong ({habits.length - completedHabitsCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHabitFilter('da_xong')}
+                  className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all ${
+                    habitFilter === 'da_xong'
+                      ? 'bg-[#15241b] text-[#38b000] border border-[#38b000]/40 shadow-sm'
+                      : 'text-[#a6a39b] hover:text-[#f8f7f4]'
+                  }`}
+                >
+                  Đã xong ({completedHabitsCount})
                 </button>
               </div>
-            );
-          })}
+
+              {habitFilter === 'tat_ca' && completedHabitsCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCollapseCompleted(!collapseCompleted)}
+                  className="text-[11px] text-[#a6a39b] hover:text-[#f8f7f4] flex items-center gap-1 font-medium transition-colors"
+                >
+                  <SlidersHorizontal className="w-3 h-3 text-[#ffaa00]" />
+                  <span>{collapseCompleted ? 'Hiện đã xong' : 'Thu gọn'}</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {habits
+            .filter((habit) => {
+              const isTicked = tickedHabitIds.has(habit.id);
+              const coveringFocus = StorageService.getCoveringFocusTaskForHabit(habit, dateIso);
+              const isDone = isTicked || coveringFocus != null;
+
+              if (habitFilter === 'chua_xong') return !isDone;
+              if (habitFilter === 'da_xong') return isDone;
+              if (habitFilter === 'tat_ca' && collapseCompleted && isDone) return false;
+              return true;
+            })
+            .map((habit) => {
+              const isTicked = tickedHabitIds.has(habit.id);
+              const coveringFocus = StorageService.getCoveringFocusTaskForHabit(habit, dateIso);
+              const isCoveredByFocus = coveringFocus != null;
+              const monthTicksCount = allMonthTicks.filter((t) => t.habitId === habit.id).length;
+
+              return (
+                <div
+                  key={habit.id}
+                  id={`hang-habit-${habit.id}`}
+                  onClick={() => setHabitDetail(habit)}
+                  className={`min-h-[52px] p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-center justify-between shadow-sm ${
+                    isCoveredByFocus
+                      ? 'bg-gradient-to-r from-[#20150e] to-[#17120e] border-[#ff6000]/60 text-[#f8f7f4]'
+                      : isTicked
+                      ? 'bg-[#121a15] border-[#38b000]/40 text-[#f8f7f4]'
+                      : 'bg-[#131418] border-[#24262c] text-[#f8f7f4] hover:border-[#ff6000]/30 hover:bg-[#17181f]'
+                  }`}
+                >
+                  {/* Habit name and month progress */}
+                  <div className="flex-1 pr-3">
+                    <div
+                      className={`text-sm font-semibold leading-tight ${
+                        isCoveredByFocus
+                          ? 'line-through text-[#a6a39b]'
+                          : isTicked
+                          ? 'text-[#f8f7f4]'
+                          : 'text-[#f8f7f4]'
+                      }`}
+                    >
+                      {habit.ten}
+                    </div>
+
+                    {/* Focus priority override note */}
+                    {isCoveredByFocus ? (
+                      <div className="text-[11px] text-[#ffaa00] font-medium mt-1 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#ffaa00]" />
+                        <span>
+                          Ưu tiên theo Focus: {coveringFocus.tieuDe} ({coveringFocus.gioBatDau}–{coveringFocus.gioKetThuc})
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-[#a6a39b] mt-1 flex items-center gap-1.5">
+                        <span>{Chuoi.xTrenNThangNay(monthTicksCount, habit.mucTieuThang)}</span>
+                        {habit.met && (
+                          <span className="text-[#ffaa00]">
+                            · {habit.phutMacDinh ?? 30} {Chuoi.phut}
+                          </span>
+                        )}
+                        {habit.gioNhac != null && (
+                          <span className="text-[#a6a39b]">
+                            · {Chuoi.gioNhacChu(habit.gioNhac)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Checkbox (>= 44pt tap target) */}
+                  {isCoveredByFocus ? (
+                    <div
+                      className="w-10 h-10 rounded-xl bg-[#26170f] border border-[#ff6000] flex flex-col items-center justify-center text-[#ffaa00] shrink-0"
+                      title={`Hoàn thành ưu tiên theo Focus: ${coveringFocus.tieuDe}`}
+                    >
+                      <Check className="w-4 h-4 stroke-[2.75]" />
+                      <span className="text-[8px] font-extrabold uppercase -mt-0.5 tracking-tighter">
+                        Focus
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      id={`nut-tick-habit-${habit.id}`}
+                      onClick={(e) => handleToggleTick(habit, e)}
+                      disabled={khoaGhi}
+                      aria-label={`Đánh dấu ${habit.ten}`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform active:scale-90 ${
+                        isTicked
+                          ? 'bg-[#38b000] text-black shadow-md shadow-[#38b000]/20'
+                          : 'bg-[#090a0c] border border-[#2a2c34] text-transparent hover:border-[#ffaa00]'
+                      } ${khoaGhi ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    >
+                      <Check className={`w-5 h-5 stroke-[2.75] ${isTicked ? 'opacity-100' : 'opacity-0'}`} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+
+          {/* Dòng tóm tắt khi đã thu gọn các mục đã xong */}
+          {habitFilter === 'tat_ca' && collapseCompleted && completedHabitsCount > 0 && (
+            <div
+              onClick={() => setCollapseCompleted(false)}
+              className="p-3 bg-[#131418] rounded-2xl border border-dashed border-[#2e313c] flex items-center justify-between cursor-pointer hover:border-[#38b000]/50 transition-colors"
+            >
+              <span className="text-xs text-[#38b000] font-medium flex items-center gap-2">
+                <Check className="w-3.5 h-3.5" />
+                <span>Đã xong {completedHabitsCount} việc (chạm để mở rộng)</span>
+              </span>
+              <ChevronDown className="w-4 h-4 text-[#a6a39b]" />
+            </div>
+          )}
         </div>
       )}
 
@@ -343,9 +496,9 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
           id="nut-them-thoi-quen-duoi-list"
           type="button"
           onClick={() => setShowAddHabit(true)}
-          className="w-full min-h-[44px] py-2.5 border border-dashed border-[#3a322c] hover:border-[#ff7a00] text-[#c4b6a8] hover:text-[#f3ece4] rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors mb-6"
+          className="w-full min-h-[46px] py-3 border border-dashed border-[#2e313c] hover:border-[#ff6000]/60 text-[#a6a39b] hover:text-[#f8f7f4] rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition-all mb-6 bg-[#131418]/50 hover:bg-[#131418]"
         >
-          <Plus className="w-4 h-4 text-[#ff7a00]" />
+          <Plus className="w-4 h-4 text-[#ffaa00]" />
           {Chuoi.themThoiQuen}
         </button>
       )}
@@ -361,19 +514,8 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
 
       {showAddHabit && (
         <ThemHabitModal
-          habitToEdit={habitToEdit}
-          onClose={() => {
-            setShowAddHabit(false);
-            setHabitToEdit(null);
-          }}
-          onSuccess={() => {
-            // Auto tick new habit for selectedDate
-            const newHabits = StorageService.getHabits();
-            const latest = newHabits[newHabits.length - 1];
-            if (latest && !habitToEdit && !khoaGhi) {
-              StorageService.toggleTick(latest.id, dateIso);
-            }
-          }}
+          onClose={() => setShowAddHabit(false)}
+          onSuccess={() => setShowAddHabit(false)}
         />
       )}
 
@@ -383,10 +525,19 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
           selectedDate={selectedDate}
           onClose={() => setHabitDetail(null)}
           onEdit={() => {
-            setHabitToEdit(habitDetail);
-            setShowAddHabit(true);
+            const h = habitDetail;
+            setHabitDetail(null);
+            setHabitToEdit(h);
           }}
           onDeleted={() => setHabitDetail(null)}
+        />
+      )}
+
+      {habitToEdit && (
+        <ThemHabitModal
+          habitToEdit={habitToEdit}
+          onClose={() => setHabitToEdit(null)}
+          onSuccess={() => setHabitToEdit(null)}
         />
       )}
 
@@ -394,7 +545,7 @@ export const ManHomNay: React.FC<ManHomNayProps> = ({
         <GhiCanModal
           selectedDate={selectedDate}
           onClose={() => setShowWeightModal(false)}
-          onSuccess={() => {}}
+          onSuccess={() => setShowWeightModal(false)}
         />
       )}
     </div>

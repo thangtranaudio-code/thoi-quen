@@ -150,6 +150,9 @@ export const Chuoi = {
   ngaySinh: 'Ngày sinh',
   mucHoatDong: 'Mức hoạt động',
   canDich: 'Cân đích',
+  lichSuCanNang: 'Lịch sử cân nặng',
+  canHienTaiNhan: 'Hiện tại',
+  bienThien: 'Biến thiên',
   tenGoi: 'Tên gọi',
   bmi: 'BMI',
   bmr: 'BMR',
@@ -198,6 +201,20 @@ export const Chuoi = {
   kcalNap: 'Kcal nạp',
   chuaGhiNap: 'Chưa ghi kcal nạp',
   themMon: 'Thêm món',
+  thucDon: 'Thực đơn',
+  chonNhanh: 'Chọn nhanh',
+  khoiLuongTieuThu: 'Khối lượng tiêu thụ',
+  khoiLuongChuan: 'Khối lượng chuẩn',
+  thuGon: 'Thu gọn',
+  moRong: 'Mở rộng',
+  thuGonTatCa: 'Thu gọn tất cả',
+  moRongTatCa: 'Mở rộng tất cả',
+  chuaCoMonNao: 'Chưa có món nào trong bữa này.',
+  themMonMoi: 'Thêm món vào thực đơn',
+  phanLoai: 'Phân loại',
+  chuaXong: 'Chưa xong',
+  daXong: 'Đã xong',
+  tatCa: 'Tất cả',
   dam: 'Đạm',
   bot: 'Bột',
   beo: 'Béo',
@@ -289,16 +306,31 @@ export const Chuoi = {
   },
   tenMon: (loai: string): string => {
     switch (loai) {
-      case 'di_bo': return Chuoi.diBo;
-      case 'chay': return Chuoi.chay;
-      case 'dap_xe': return Chuoi.dapXe;
-      case 'khang_luc': return Chuoi.khangLuc;
-      case 'yoga': return Chuoi.yoga;
-      case 'boi': return Chuoi.boi;
-      case 'da_bong': return Chuoi.daBong;
-      case 'cau_long': return Chuoi.cauLong;
-      case 'nhay_day': return Chuoi.nhayDay;
-      case 'gian_co': return Chuoi.gianCo;
+      case 'di_bo': return 'Đi bộ thư giãn';
+      case 'di_bo_nhanh': return 'Đi bộ nhanh (Cardio)';
+      case 'chay': return 'Chạy bộ (Cardio)';
+      case 'dap_xe': return 'Đạp xe (Cardio)';
+      case 'khang_luc': return 'Kháng lực / Tập tạ';
+      case 'calisthenics': return 'Hít đất & Xà đơn';
+      case 'co_bung': return 'Cơ bụng & Core';
+      case 'powerlifting': return 'Nâng tạ nặng';
+      case 'yoga': return 'Yoga';
+      case 'pilates': return 'Pilates';
+      case 'boi': return 'Bơi lội (Cardio)';
+      case 'hiit': return 'Cardio HIIT';
+      case 'leo_thang': return 'Leo cầu thang';
+      case 'cheo_thuyen': return 'Máy chèo thuyền';
+      case 'may_elip': return 'Máy Elliptical';
+      case 'aerobic': return 'Aerobic / Zumba';
+      case 'da_bong': return 'Đá bóng';
+      case 'cau_long': return 'Cầu lông';
+      case 'bong_ro': return 'Bóng rổ';
+      case 'pickleball': return 'Tennis / Pickleball';
+      case 'boxing': return 'Boxing / Kickfit';
+      case 'bong_ban': return 'Bóng bàn';
+      case 'bong_chuyen': return 'Bóng chuyền';
+      case 'nhay_day': return 'Nhảy dây (Cardio)';
+      case 'gian_co': return 'Giãn cơ / Phục hồi';
       default: return loai;
     }
   },

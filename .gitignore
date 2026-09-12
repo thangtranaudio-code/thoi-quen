@@ -1,3 +1,10 @@
+# Node & Build artifacts
+node_modules/
+dist/
+dist-ssr/
+*.local
+tsconfig.tsbuildinfo
+
 # Miscellaneous
 *.class
 *.log

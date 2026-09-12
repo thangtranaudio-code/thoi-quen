@@ -8,10 +8,10 @@ import { GhiCanModal } from './components/GhiCanModal';
 import { GhiTapModal } from './components/GhiTapModal';
 import { GhiNapModal } from './components/GhiNapModal';
 import { GhiChiSoModal } from './components/GhiChiSoModal';
+import { PhanThuongCamXuc } from './components/PhanThuongCamXuc';
 import { ManHomNay } from './screens/ManHomNay';
 import { ManLich } from './screens/ManLich';
-import { ManTienDo } from './screens/ManTienDo';
-import { ManHe } from './screens/ManHe';
+import { ManFocus } from './screens/ManFocus';
 import { ManTaiKhoan } from './screens/ManTaiKhoan';
 import { Sparkles, X } from 'lucide-react';
 
@@ -41,6 +41,9 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0c0d0b] text-[#e7e4dc] font-sans antialiased flex flex-col selection:bg-[#ff7a00] selection:text-black">
+      {/* Emotional Reward Toast & Celebration */}
+      <PhanThuongCamXuc />
+
       {/* Level Up Celebration Toast */}
       {levelUpMoment && (
         <div
@@ -70,33 +73,39 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-lg mx-auto">
+        {/* Tab 0: Hôm nay */}
         {tab === 0 && (
           <ManHomNay
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onOpenTienDo={() => setTab(2)}
+            onOpenTienDo={() => setTab(1)}
+            onOpenFocus={() => setTab(2)}
           />
         )}
+
+        {/* Tab 1: Lịch (Tích hợp Lịch & Thống kê / Tiến độ) */}
         {tab === 1 && (
           <ManLich
             selectedDate={selectedDate}
             onSelectDate={(d) => {
               setSelectedDate(d);
-              setTab(0); // Switch to Home on date tap as in Flutter
             }}
           />
         )}
+
+        {/* Tab 2: Focus (Đặt lịch công việc quan trọng) */}
         {tab === 2 && (
-          <ManTienDo
+          <ManFocus
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
           />
         )}
-        {tab === 3 && <ManHe />}
-        {tab === 4 && <ManTaiKhoan />}
+
+        {/* Tab 3: Tài khoản */}
+        {tab === 3 && <ManTaiKhoan />}
       </main>
 
-      {/* Bottom Navigation Bar */}
+      {/* Bottom Navigation Bar: Hôm nay - Lịch - + - Focus - Tài khoản */}
       <ThanhDay
         tab={tab}
         onTab={setTab}
@@ -110,6 +119,10 @@ export const App: React.FC = () => {
           khoaGhi={khoaGhi}
           onClose={() => setShowLuoiGhi(false)}
           onChon={handleOpenModal}
+          onChonFocus={() => {
+            setShowLuoiGhi(false);
+            setTab(2);
+          }}
         />
       )}
 

@@ -35,16 +35,38 @@ export const CongThuc = {
   tyLeBeo: 0.30,
 
   mon: [
-    { loai: 'di_bo', ten: 'Đi bộ', met: 3.5 },
-    { loai: 'chay', ten: 'Chạy', met: 8.0 },
-    { loai: 'dap_xe', ten: 'Đạp xe', met: 6.8 },
-    { loai: 'khang_luc', ten: 'Kháng lực', met: 5.0 },
-    { loai: 'yoga', ten: 'Yoga', met: 3.0 },
-    { loai: 'boi', ten: 'Bơi', met: 6.0 },
-    { loai: 'da_bong', ten: 'Đá bóng', met: 7.0 },
-    { loai: 'cau_long', ten: 'Cầu lông', met: 5.5 },
-    { loai: 'nhay_day', ten: 'Nhảy dây', met: 8.8 },
-    { loai: 'gian_co', ten: 'Giãn cơ', met: 2.3 },
+    // Cardio & Sức bền
+    { loai: 'chay', ten: 'Chạy bộ (Cardio)', met: 8.0, nhom: 'cardio' as const },
+    { loai: 'di_bo_nhanh', ten: 'Đi bộ nhanh (Cardio)', met: 4.5, nhom: 'cardio' as const },
+    { loai: 'di_bo', ten: 'Đi bộ thư giãn', met: 3.5, nhom: 'cardio' as const },
+    { loai: 'nhay_day', ten: 'Nhảy dây (Cardio)', met: 8.8, nhom: 'cardio' as const },
+    { loai: 'dap_xe', ten: 'Đạp xe (Cardio)', met: 6.8, nhom: 'cardio' as const },
+    { loai: 'boi', ten: 'Bơi lội (Cardio)', met: 6.0, nhom: 'cardio' as const },
+    { loai: 'hiit', ten: 'Cardio HIIT ngắt quãng', met: 8.5, nhom: 'cardio' as const },
+    { loai: 'leo_thang', ten: 'Leo cầu thang (Cardio)', met: 8.8, nhom: 'cardio' as const },
+    { loai: 'cheo_thuyen', ten: 'Máy chèo thuyền (Rowing)', met: 7.0, nhom: 'cardio' as const },
+    { loai: 'may_elip', ten: 'Máy trượt tuyết (Elliptical)', met: 5.0, nhom: 'cardio' as const },
+    { loai: 'aerobic', ten: 'Aerobic / Zumba', met: 6.5, nhom: 'cardio' as const },
+
+    // Kháng lực & Gym
+    { loai: 'khang_luc', ten: 'Kháng lực / Tập tạ Gym', met: 5.0, nhom: 'gym' as const },
+    { loai: 'calisthenics', ten: 'Hít đất & Xà đơn (Calisthenics)', met: 5.5, nhom: 'gym' as const },
+    { loai: 'co_bung', ten: 'Tập cơ bụng & Core', met: 3.8, nhom: 'gym' as const },
+    { loai: 'powerlifting', ten: 'Nâng tạ nặng (Powerlifting)', met: 6.0, nhom: 'gym' as const },
+
+    // Thể thao & Đối kháng
+    { loai: 'cau_long', ten: 'Cầu lông', met: 5.5, nhom: 'the_thao' as const },
+    { loai: 'da_bong', ten: 'Đá bóng', met: 7.0, nhom: 'the_thao' as const },
+    { loai: 'bong_ro', ten: 'Bóng rổ', met: 6.5, nhom: 'the_thao' as const },
+    { loai: 'pickleball', ten: 'Tennis / Pickleball', met: 6.0, nhom: 'the_thao' as const },
+    { loai: 'boxing', ten: 'Boxing / Kickfit', met: 7.8, nhom: 'the_thao' as const },
+    { loai: 'bong_ban', ten: 'Bóng bàn', met: 4.0, nhom: 'the_thao' as const },
+    { loai: 'bong_chuyen', ten: 'Bóng chuyền', met: 4.5, nhom: 'the_thao' as const },
+
+    // Dẻo dai & Tinh thần
+    { loai: 'yoga', ten: 'Yoga', met: 3.0, nhom: 'deo_dai' as const },
+    { loai: 'pilates', ten: 'Pilates', met: 3.5, nhom: 'deo_dai' as const },
+    { loai: 'gian_co', ten: 'Giãn cơ / Phục hồi', met: 2.3, nhom: 'deo_dai' as const },
   ],
 
   metCua: (loai?: string | null): number | null => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Calendar, Plus, TrendingUp, Hexagon, User } from 'lucide-react';
+import { CheckCircle2, Calendar, Plus, Target, User } from 'lucide-react';
 import { Chuoi } from '../chuoi';
 
 interface ThanhDayProps {
@@ -31,7 +31,7 @@ export const ThanhDay: React.FC<ThanhDayProps> = ({ tab, onTab, onCong }) => {
           </span>
         </button>
 
-        {/* Tab 1: Lịch */}
+        {/* Tab 1: Lịch (Tích hợp Thống kê) */}
         <button
           id="tab-lich"
           type="button"
@@ -46,59 +46,44 @@ export const ThanhDay: React.FC<ThanhDayProps> = ({ tab, onTab, onCong }) => {
           </span>
         </button>
 
-        {/* Center (+): Lưới ghi */}
+        {/* Center (+): Thêm nhanh */}
         <div className="w-14 flex items-center justify-center">
           <button
             id="nut-cong-ghi-nhanh"
             type="button"
             onClick={onCong}
-            aria-label="Ghi nhanh"
+            aria-label="Thêm nhanh"
             className="w-11 h-11 rounded-full bg-[#ff7a00] text-[#0d0d0d] flex items-center justify-center shadow-md active:scale-95 transition-transform"
           >
             <Plus className="w-6 h-6 stroke-[2.75]" />
           </button>
         </div>
 
-        {/* Tab 2: Tiến độ */}
+        {/* Tab 2: Focus */}
         <button
-          id="tab-tien-do"
+          id="tab-focus"
           type="button"
           onClick={() => onTab(2)}
           className={`flex-1 flex flex-col items-center justify-center h-full min-h-[44px] transition-colors ${
             tab === 2 ? 'text-[#ff7a00]' : 'text-[#c4b6a8] hover:text-[#f3ece4]'
           }`}
         >
-          <TrendingUp className={`w-5 h-5 ${tab === 2 ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
+          <Target className={`w-5 h-5 ${tab === 2 ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
           <span className="text-[11px] font-medium tracking-tight mt-1 whitespace-nowrap">
-            {Chuoi.tienDo}
+            Focus
           </span>
         </button>
 
-        {/* Tab 3: Hệ */}
+        {/* Tab 3: Tài khoản */}
         <button
-          id="tab-he"
+          id="tab-tai-khoan"
           type="button"
           onClick={() => onTab(3)}
           className={`flex-1 flex flex-col items-center justify-center h-full min-h-[44px] transition-colors ${
             tab === 3 ? 'text-[#ff7a00]' : 'text-[#c4b6a8] hover:text-[#f3ece4]'
           }`}
         >
-          <Hexagon className={`w-5 h-5 ${tab === 3 ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
-          <span className="text-[11px] font-medium tracking-tight mt-1 whitespace-nowrap">
-            {Chuoi.he}
-          </span>
-        </button>
-
-        {/* Tab 4: Tài khoản */}
-        <button
-          id="tab-tai-khoan"
-          type="button"
-          onClick={() => onTab(4)}
-          className={`flex-1 flex flex-col items-center justify-center h-full min-h-[44px] transition-colors ${
-            tab === 4 ? 'text-[#ff7a00]' : 'text-[#c4b6a8] hover:text-[#f3ece4]'
-          }`}
-        >
-          <User className={`w-5 h-5 ${tab === 4 ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
+          <User className={`w-5 h-5 ${tab === 3 ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
           <span className="text-[11px] font-medium tracking-tight mt-1 whitespace-nowrap">
             {Chuoi.taiKhoan}
           </span>

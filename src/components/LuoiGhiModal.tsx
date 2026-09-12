@@ -1,5 +1,5 @@
 import React from 'react';
-import { Scale, Flame, Utensils, Ruler, X } from 'lucide-react';
+import { Scale, Flame, Utensils, Ruler, Target, X } from 'lucide-react';
 import { Chuoi } from '../chuoi';
 
 interface LuoiGhiModalProps {
@@ -7,6 +7,7 @@ interface LuoiGhiModalProps {
   khoaGhi: boolean;
   onClose: () => void;
   onChon: (loai: 'can' | 'tap' | 'nap' | 'chiSo') => void;
+  onChonFocus?: () => void;
 }
 
 export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
@@ -14,6 +15,7 @@ export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
   khoaGhi,
   onClose,
   onChon,
+  onChonFocus,
 }) => {
   return (
     <div
@@ -44,15 +46,39 @@ export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
           </button>
         </div>
 
+        {/* Quick Focus Button */}
+        {onChonFocus && (
+          <button
+            id="nut-ghi-nhanh-focus"
+            type="button"
+            onClick={() => {
+              onClose();
+              onChonFocus();
+            }}
+            className="w-full mb-3 p-3 bg-gradient-to-r from-[#2a1c14] to-[#1f1610] hover:from-[#352319] hover:to-[#2a1c14] border border-[#ff7a00]/60 rounded-xl flex items-center justify-between transition-colors active:scale-98"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#ff7a00] text-[#0c0d0b] flex items-center justify-center">
+                <Target className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <div className="text-sm font-bold text-[#f3ece4]">Đặt lịch Focus</div>
+                <div className="text-[11px] text-[#ff7a00]">Khung giờ làm việc quan trọng & ưu tiên</div>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-[#ff7a00]">Mở Focus →</span>
+          </button>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {/* Cân nặng */}
           <button
             id="nut-ghi-can"
             type="button"
             onClick={() => onChon('can')}
-            className="min-h-[88px] p-4 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-colors active:scale-98"
+            className="min-h-[80px] p-3.5 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-1.5 text-center transition-colors active:scale-98"
           >
-            <Scale className="w-6 h-6 text-[#ff7a00]" />
+            <Scale className="w-5 h-5 text-[#ff7a00]" />
             <span className="text-sm font-semibold text-[#f3ece4] leading-tight">
               {Chuoi.canNang}
             </span>
@@ -63,9 +89,9 @@ export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
             id="nut-ghi-tap"
             type="button"
             onClick={() => onChon('tap')}
-            className="min-h-[88px] p-4 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-colors active:scale-98"
+            className="min-h-[80px] p-3.5 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-1.5 text-center transition-colors active:scale-98"
           >
-            <Flame className="w-6 h-6 text-[#ffb000]" />
+            <Flame className="w-5 h-5 text-[#ffb000]" />
             <span className="text-sm font-semibold text-[#f3ece4] leading-tight">
               {Chuoi.hoatDongO}
             </span>
@@ -76,9 +102,9 @@ export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
             id="nut-ghi-nap"
             type="button"
             onClick={() => onChon('nap')}
-            className="min-h-[88px] p-4 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-colors active:scale-98"
+            className="min-h-[80px] p-3.5 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-1.5 text-center transition-colors active:scale-98"
           >
-            <Utensils className="w-6 h-6 text-[#3d9a7a]" />
+            <Utensils className="w-5 h-5 text-[#3d9a7a]" />
             <span className="text-sm font-semibold text-[#f3ece4] leading-tight">
               {Chuoi.nhatKy}
             </span>
@@ -89,9 +115,9 @@ export const LuoiGhiModal: React.FC<LuoiGhiModalProps> = ({
             id="nut-ghi-chi-so"
             type="button"
             onClick={() => onChon('chiSo')}
-            className="min-h-[88px] p-4 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-2 text-center transition-colors active:scale-98"
+            className="min-h-[80px] p-3.5 bg-[#0d0d0d] hover:bg-[#2a1c14] border border-[#3a322c]/60 rounded-xl flex flex-col items-center justify-center gap-1.5 text-center transition-colors active:scale-98"
           >
-            <Ruler className="w-6 h-6 text-[#c4b6a8]" />
+            <Ruler className="w-5 h-5 text-[#c4b6a8]" />
             <span className="text-sm font-semibold text-[#f3ece4] leading-tight">
               {Chuoi.chiSo}
             </span>
