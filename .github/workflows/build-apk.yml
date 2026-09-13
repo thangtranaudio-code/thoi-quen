@@ -34,17 +34,14 @@ jobs:
           npm run build
           cp -r dist www
 
-      - name: Setup Capacitor & Sync Android Project
+      - name: Setup Capacitor & Prepare Android Project
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android --no-audit --no-fund
-          if [ -d "android" ]; then
-            echo "Da co thu muc android, tien hanh dong bo code..."
-            npx cap sync android
-          else
-            echo "Khoi tao du an Android moi..."
-            npx cap init "Thoi Quen" "com.thoiquen.app" --web-dir dist
-            npx cap add android
-          fi
+          rm -rf android
+          rm -f capacitor.config.ts capacitor.config.json
+          npx cap init "Thoi Quen" "com.thoiquen.app" --web-dir dist
+          npx cap add android
+          npx cap sync android
 
       - name: Build Android Debug APK
         run: |
