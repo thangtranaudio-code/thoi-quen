@@ -30,11 +30,34 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Build Web Application (Vite)
-        run: npm run build
+        run: |
+          npm run build
+          cp -r dist www
 
       - name: Setup Capacitor & Sync Android Project
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android --no-audit --no-fund
+          if [ -d "android" ]; then
+            echo "Da co thu muc android, tien hanh dong bo code..."
+            npx cap sync android
+          else
+            echo "Khoi tao du an Android moi..."
+            npx cap init "Thoi Quen" "com.thoiquen.app" --web-dir dist
+            npx cap add android
+          fi
+
+      - name: Build Android Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ThoiQuen-Android-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30          npm install @capacitor/core @capacitor/cli @capacitor/android --no-audit --no-fund
           if [ -d "android" ]; then
             echo "Da co thu muc android, tien hanh dong bo code..."
             npx cap sync android
